@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TaksuCitra — Platform Demo Image Processing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<!-- Command Palette Overlay -->
+<div class="cmdk-overlay" id="cmdk-overlay">
+  <div class="cmdk-box">
+    <input type="text" id="cmdk-input" placeholder="Cari fitur... (mis. 'blur', 'histogram', 'panorama')" autocomplete="off">
+    <div class="cmdk-results" id="cmdk-results"></div>
+    <div class="cmdk-footer">
+      <span><kbd>↑</kbd><kbd>↓</kbd> navigasi</span>
+      <span><kbd>Enter</kbd> pilih</span>
+      <span><kbd>Esc</kbd> tutup</span>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-badge">
+        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">spa</span>
+      </div>
+      <div>
+        <h1>GeraldPixel</h1>
+        <p>v2.0 &bull; Platform</p>
+      </div>
+      <button class="cmdk-trigger" id="cmdk-trigger" title="Cari fitur (Ctrl+K)">
+        <span>&#8984;K</span>
+      </button>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="sidebar-filter" placeholder="Filter menu...">
+    </div>
+
+    <button class="nav-home active" id="nav-home-btn" data-panel="home">
+      <span class="material-symbols-outlined">dashboard</span>
+      <span class="nav-group-label">Home</span>
+    </button>
+
+    <nav class="nav-groups" id="nav-groups">
+
+      <div class="nav-group collapsed">
+        <button class="nav-group-title" type="button">
+          <span class="material-symbols-outlined nav-group-icon">grid_view</span>
+          <span class="nav-group-label">Operasi Piksel</span>
+          <span class="material-symbols-outlined chevron">expand_more</span>
+        </button>
+        <div class="nav-subitems">
+          <button class="nav-item" data-panel="channel-split">Channel Split</button>
+          <button class="nav-item" data-panel="denoise">Noise</button>
+          <button class="nav-item" data-panel="brightness">Kecerahan</button>
+          <button class="nav-item" data-panel="contrast">Kontras</button>
+          <button class="nav-item" data-panel="sharpen">Sharpening</button>
+          <button class="nav-item" data-panel="rotate-scale">Rotasi</button>
+          <button class="nav-item" data-panel="blend">Penggabungan</button>
+        </div>
+      </div>
+
+      <div class="nav-group collapsed">
+        <button class="nav-group-title" type="button">
+          <span class="material-symbols-outlined nav-group-icon">swap_horiz</span>
+          <span class="nav-group-label">Konversi Gambar</span>
+          <span class="material-symbols-outlined chevron">expand_more</span>
+        </button>
+        <div class="nav-subitems">
+          <button class="nav-item" data-panel="colorspace">Ruang Warna</button>
+          <button class="nav-item" data-panel="resolution">Resolusi</button>
+          <button class="nav-item" data-panel="bitdepth">Bit Depth</button>
+          <button class="nav-item" data-panel="format">Format</button>
+        </div>
+      </div>
+
+      <div class="nav-group collapsed">
+        <button class="nav-group-title" type="button">
+          <span class="material-symbols-outlined nav-group-icon">bar_chart</span>
+          <span class="nav-group-label">Operasi Histogram</span>
+          <span class="material-symbols-outlined chevron">expand_more</span>
+        </button>
+        <div class="nav-subitems">
+          <button class="nav-item" data-panel="hist-analisis">Analisis</button>
+          <button class="nav-item" data-panel="hist-equalization">Equalization</button>
+          <button class="nav-item" data-panel="hist-denoise">Noise</button>
+          <button class="nav-item" data-panel="hist-edge">Tepi</button>
+          <button class="nav-item" data-panel="hist-segmentation">Segmentasi</button>
+          <button class="nav-item" data-panel="hist-intensity">Intensitas</button>
+        </div>
+      </div>
+
+      <div class="nav-group collapsed">
+        <button class="nav-group-title" type="button">
+          <span class="material-symbols-outlined nav-group-icon">shapes</span>
+          <span class="nav-group-label">Morfologi Citra</span>
+          <span class="material-symbols-outlined chevron">expand_more</span>
+        </button>
+        <div class="nav-subitems">
+          <button class="nav-item" data-panel="morf-dilasi">Dilasi</button>
+          <button class="nav-item" data-panel="morf-erosi">Erosi</button>
+          <button class="nav-item" data-panel="morf-opening">Opening</button>
+          <button class="nav-item" data-panel="morf-closing">Closing</button>
+          <button class="nav-item" data-panel="morf-hit-or-miss">Hit-or-Miss</button>
+          <button class="nav-item" data-panel="morf-skeleton">Skeletonization</button>
+        </div>
+      </div>
+
+      <div class="nav-group collapsed">
+        <button class="nav-group-title" type="button">
+          <span class="material-symbols-outlined nav-group-icon">auto_awesome</span>
+          <span class="nav-group-label">Peningkatan &amp; Analisis</span>
+          <span class="material-symbols-outlined chevron">expand_more</span>
+        </button>
+        <div class="nav-subitems">
+          <button class="nav-item" data-panel="enh-brightness-contrast">Kecerahan &amp; Kontras</button>
+          <button class="nav-item" data-panel="enh-flip">Pencerminan (Flip)</button>
+          <button class="nav-item" data-panel="enh-rotasi">Rotasi Citra</button>
+          <button class="nav-item" data-panel="enh-edge-detection">Deteksi Tepi</button>
+          <button class="nav-item" data-panel="enh-noise-reduction">Reduksi Derau (Denoise)</button>
+          <button class="nav-item" data-panel="enh-pipeline">Pipeline Terpadu</button>
+        </div>
+      </div>
+
+      <div class="nav-group collapsed">
+        <button class="nav-group-title nav-group-title-gold" type="button" data-landing="ai-lab-home">
+          <span class="material-symbols-outlined nav-group-icon">psychology</span>
+          <span class="nav-group-label">AI Lab Unggulan</span>
+          <span class="material-symbols-outlined chevron">expand_more</span>
+        </button>
+        <div class="nav-subitems">
+          <button class="nav-item" data-panel="ai-face-blur">Wajah</button>
+          <button class="nav-item" data-panel="ai-super-res">Super Res</button>
+          <button class="nav-item" data-panel="ai-object-detection">Objek</button>
+          <button class="nav-item" data-panel="ai-artistic">Artistic</button>
+          <button class="nav-item" data-panel="ai-remove-bg">BG Remover</button>
+        </div>
+      </div>
+
+      <div class="nav-group collapsed">
+        <button class="nav-group-title" type="button">
+          <span class="material-symbols-outlined nav-group-icon">settings_input_component</span>
+          <span class="nav-group-label">Advanced Ops</span>
+          <span class="material-symbols-outlined chevron">expand_more</span>
+        </button>
+        <div class="nav-subitems">
+          <button class="nav-item" data-panel="adv-inpaint">Magic Eraser</button>
+          <button class="nav-item" data-panel="adv-panorama">Panorama</button>
+          <button class="nav-item" data-panel="adv-morphology">Morphological</button>
+          <button class="nav-item" data-panel="adv-frequency">Frequency</button>
+          <button class="nav-item" data-panel="adv-feature-matching">Feature Matching</button>
+          <button class="nav-item" data-panel="adv-qr">QR</button>
+          <button class="nav-item" data-panel="adv-histmatch">Histogram Match</button>
+          <button class="nav-item" data-panel="adv-watermark">Watermark</button>
+        </div>
+      </div>
+
+      <div class="nav-group collapsed">
+        <button class="nav-group-title nav-group-title-gold" type="button">
+          <span class="material-symbols-outlined nav-group-icon">auto_awesome_mosaic</span>
+          <span class="nav-group-label">Feature Extraction Lab</span>
+          <span class="material-symbols-outlined chevron">expand_more</span>
+        </button>
+        <div class="nav-subitems">
+          <div class="nav-subgroup-label">3.1 Statistik & Warna</div>
+          <button class="nav-item" data-panel="fe-intensity">Statistik Intensitas</button>
+          <button class="nav-item" data-panel="fe-color-stats">Statistik Warna</button>
+          <button class="nav-item" data-panel="fe-color-hist">Histogram Warna</button>
+
+          <div class="nav-subgroup-label">3.2 Bentuk & Moments</div>
+          <button class="nav-item" data-panel="fe-shape">Shape Descriptors</button>
+          <button class="nav-item" data-panel="fe-moments">Raw &amp; Central Moments</button>
+          <button class="nav-item" data-panel="fe-hu">Hu Moments ⭐</button>
+
+          <div class="nav-subgroup-label">3.3 Tekstur — GLCM</div>
+          <button class="nav-item" data-panel="fe-glcm">GLCM Explorer</button>
+          <button class="nav-item" data-panel="fe-glcm-block">GLCM Block/Overlap</button>
+          <button class="nav-item" data-panel="fe-glcm-color">GLCM Warna</button>
+
+          <div class="nav-subgroup-label">3.3 Tekstur — LBP</div>
+          <button class="nav-item" data-panel="fe-lbp">LBP Explorer</button>
+          <button class="nav-item" data-panel="fe-lbp-block">LBP Block/Overlap</button>
+          <button class="nav-item" data-panel="fe-lbp-multiscale">LBP Multi-scale</button>
+          <button class="nav-item" data-panel="fe-ltp">LTP</button>
+          <button class="nav-item" data-panel="fe-clbp">CLBP</button>
+          <button class="nav-item" data-panel="fe-cslbp">CS-LBP</button>
+          <button class="nav-item" data-panel="fe-mblbp">MB-LBP</button>
+
+          <div class="nav-subgroup-label">3.3 Tekstur — Gabor</div>
+          <button class="nav-item" data-panel="fe-gabor-single">Gabor Single</button>
+          <button class="nav-item" data-panel="fe-gabor-bank">Gabor Bank</button>
+          <button class="nav-item" data-panel="fe-gabor-block">Gabor Block</button>
+          <button class="nav-item" data-panel="fe-gabor-lbp">Gabor + LBP</button>
+
+          <div class="nav-subgroup-label">3.4 Gradien, Tepi &amp; Transform</div>
+          <button class="nav-item" data-panel="fe-hog">HOG</button>
+          <button class="nav-item" data-panel="fe-edge">Fitur Tepi</button>
+          <button class="nav-item" data-panel="fe-projection">Projection Profile</button>
+          <button class="nav-item" data-panel="fe-dct">DCT</button>
+          <button class="nav-item" data-panel="fe-fft-radial">FFT Radial</button>
+          <button class="nav-item" data-panel="fe-wavelet">Wavelet</button>
+
+          <div class="nav-subgroup-label">3.5 Descriptor Lokal</div>
+          <button class="nav-item" data-panel="fe-local-extract">Ekstrak Keypoint (ORB/SIFT)</button>
+          <button class="nav-item" data-panel="fe-local-match">Matching Keypoint</button>
+
+          <div class="nav-subgroup-label">3.6 Robust &amp; Deep</div>
+          <button class="nav-item" data-panel="fe-resnet50">ResNet50 Embedding</button>
+          <button class="nav-item" data-panel="fe-robustness">Robustness Stress-Test</button>
+
+          <div class="nav-subgroup-label">Lintas-Fitur</div>
+          <button class="nav-item" data-panel="fe-matching-engine">Matching Engine</button>
+          <button class="nav-item" data-panel="fe-concat">Concat Playground</button>
+        </div>
+      </div>
+
+      <!-- MATCHING LAB (Bumi & Mas) -->
+      <div class="nav-group collapsed">
+        <button class="nav-group-title nav-group-title-gold" type="button">
+          <span class="material-symbols-outlined nav-group-icon">compare</span>
+          <span class="nav-group-label">Matching Lab</span>
+          <span class="material-symbols-outlined chevron">expand_more</span>
+        </button>
+        <div class="nav-subitems">
+          <button class="nav-item" data-panel="ml-advisor">Matching Advisor (§16)</button>
+          <button class="nav-item" data-panel="ml-vector">Vector Distance (§2)</button>
+          <button class="nav-item" data-panel="ml-histogram">Histogram &amp; Distribusi (§3)</button>
+          <button class="nav-item" data-panel="ml-binary">Binary Matching (§4)</button>
+          <button class="nav-item" data-panel="ml-template">Template Matching (§5)</button>
+          <button class="nav-item" data-panel="ml-local">Local Feature &amp; Funnel (§6)</button>
+          <button class="nav-item" data-panel="ml-geometric">RANSAC &amp; Homography (§7–8)</button>
+          <button class="nav-item" data-panel="ml-shape">Shape &amp; Contour (§9)</button>
+          <button class="nav-item" data-panel="ml-sequence">Sequence DTW (§10)</button>
+          <button class="nav-item" data-panel="ml-assignment">Assignment &amp; OT (§11)</button>
+          <button class="nav-item" data-panel="ml-motion">Optical Flow (§12)</button>
+          <button class="nav-item" data-panel="ml-deep">Deep Matching (§13–14)</button>
+          <button class="nav-item" data-panel="ml-guard">Compatibility Guard (§15)</button>
+          <button class="nav-item" data-panel="ml-arena">Method Arena</button>
+          <button class="nav-item" data-panel="ml-preset">Preset Kasus A–E (§17)</button>
+          <button class="nav-item" data-panel="ml-database">Citra 1-vs-Database (§18)</button>
+          <button class="nav-item" data-panel="ml-audio-dtw">Suara DTW Lab (§19)</button>
+        </div>
+      </div>
+
+      <div class="nav-group collapsed">
+        <button class="nav-group-title" type="button">
+          <span class="material-symbols-outlined nav-group-icon">star</span>
+          <span class="nav-group-label">Mode Khusus</span>
+          <span class="material-symbols-outlined chevron">expand_more</span>
+        </button>
+        <div class="nav-subitems">
+          <button class="nav-item" data-panel="mode-batch">Batch</button>
+          <button class="nav-item" data-panel="mode-webcam">Live</button>
+          <button class="nav-item" data-panel="mode-history">Riwayat</button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div>Tugas Image Processing Programming</div>
+      <div class="sidebar-footer-sub">Semester 5 &middot; TaksuCitra v2</div>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="content">
+    <header class="content-header">
+      <div>
+        <h2 id="panel-title">Perubahan Warna (Channel Split)</h2>
+        <p id="panel-desc">Memisahkan citra menjadi kanal Red, Green, dan Blue.</p>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="btn-open-history" title="Riwayat">🕓<span id="history-count" class="count-badge" style="display:none">0</span></button>
+      </div>
+    </header>
+
+    <!-- Shared image source picker -->
+    <section class="card image-source" id="image-source-card">
+      <h3>Sumber Gambar</h3>
+      <div class="source-row">
+        <div class="samples" id="sample-list">
+          {% for s in samples %}
+          <label class="sample-thumb">
+            <input type="radio" name="sample" value="{{ s }}" {% if loop.first %}checked{% endif %}>
+            <img src="{{ url_for('static', filename='samples/' + s) }}" alt="{{ s }}">
+          </label>
+          {% endfor %}
+        </div>
+        <div class="upload-box">
+          <label for="upload-input" class="upload-label">Atau upload gambar sendiri</label>
+          <input type="file" id="upload-input" accept="image/*">
+          <div id="upload-preview-wrap" class="upload-preview-wrap" style="display:none">
+            <img id="upload-preview" alt="preview">
+            <button id="clear-upload" type="button">Hapus &amp; pakai sample</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card panel-controls" id="panel-controls"></section>
+    <section class="card panel-result" id="panel-result">
+      <div class="placeholder">Atur parameter di atas lalu klik <strong>Proses</strong> untuk melihat hasil.</div>
+    </section>
+  </main>
+</div>
+
+<!-- History Drawer -->
+<div class="drawer-overlay" id="history-overlay"></div>
+<aside class="drawer" id="history-drawer">
+  <div class="drawer-header">
+    <h3>Riwayat Proses</h3>
+    <button id="btn-close-history">✕</button>
+  </div>
+  <div class="drawer-body" id="history-list"></div>
+  <div class="drawer-footer">
+    <div class="student-info-form">
+      <input type="text" id="student-name" placeholder="Nama lengkap">
+      <input type="text" id="student-course" placeholder="Mata kuliah" value="Image Processing Programming">
+    </div>
+    <button class="btn-process full-width" id="btn-export-pdf">📄 Export Laporan PDF</button>
+    <button class="btn-secondary full-width" id="btn-clear-history">Hapus Semua Riwayat</button>
+  </div>
+</aside>
+
+<script src="{{ url_for('static', filename='js/help_texts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/panels.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
